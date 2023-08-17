@@ -1,18 +1,22 @@
-from gcloud import storage
-from oauth2client.service_account import ServiceAccountCredentials
+from google.cloud import storage
+from src.utils import auth_to_gcp
 import os
+import tempfile
 
 
-credentials_dict = {
-    'type': 'service_account',
-    'client_id': os.environ['BACKUP_CLIENT_ID'],
-    'client_email': os.environ['BACKUP_CLIENT_EMAIL'],
-    'private_key_id': os.environ['BACKUP_PRIVATE_KEY_ID'],
-    'private_key': os.environ['BACKUP_PRIVATE_KEY'],
-}
-credentials = ServiceAccountCredentials.from_json_keyfile_dict(
-    credentials_dict
-)
-client = storage.Client(credentials=credentials, project='myproject')
-bucket = client.get_bucket('mybucket')
-blob = bucket.blob('myfile')
+def upload_to_bucket(path, image_bytes):
+    project_id, target_credentials = auth_to_gcp()
+
+    client = storage.Client(credentials=target_credentials, project=project_id)
+    bucket = client.get_bucket('face-recognition-bucket-proj')
+
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        temp_file.write(image_bytes)
+        temp_path = temp_file.name
+
+    try:
+        blob = bucket.blob(path)
+        blob.upload_from_filename(temp_path)
+        print(f"Uploaded {path} to the bucket")
+    finally:
+        os.remove(temp_path)

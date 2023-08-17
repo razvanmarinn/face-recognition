@@ -17,7 +17,7 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
 def get_items(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Item).offset(skip).limit(limit).all()
 
-def create_user_item(db: Session, item: Image):
+def upload_path_to_db(db: Session, item: Image):
     db_item = models.Image(id = 0, name = item.name, path = item.path, size = item.size, user_id = item.user_id)
     db.add(db_item)
     db.commit()
