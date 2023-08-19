@@ -3,7 +3,7 @@ import os
 import numpy as np
 import time
 from src.database.models.schema import User, Image
-from src.cloud_bucket.upload_to_bucket import upload_to_bucket
+from src.cloud_bucket.bucket_actions import BucketActions
 
 
 def add_face(path, image_bytes):
@@ -16,7 +16,10 @@ def add_face(path, image_bytes):
 def write_image(path, image_bytes: bytes):
     image_data = np.frombuffer(image_bytes, np.uint8)
     image = cv2.imdecode(image_data, cv2.IMREAD_COLOR)
-    upload_to_bucket(path, image)
 
-    # cv2.imwrite(path, image)
+    _, encoded_image = cv2.imencode('.jpg', image)
+    encoded_image_bytes = encoded_image.tobytes()
+
+    BucketActions.upload_to_bucket(path, encoded_image_bytes)
+
 

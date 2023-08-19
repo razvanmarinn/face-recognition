@@ -40,7 +40,7 @@ async def face_recognition_add_face(name: str = Form(...), image: UploadFile = F
 async def recognize(face_name: str = Form(...), image: UploadFile = File(...)):
     image_content = await image.read()
     file_size = len(image_content)
-    user = User(id=10, email="test", password="test", username="test")
+    user = User(id=11, email="test", password="test", username="test")
     image = Image(name="temp", size=file_size, user_id=user.id)
     face_recognition.encode_faces(user, face_name)
-    return face_recognition.run_recognition(image_content)
+    return face_recognition.recognize(image_content)
