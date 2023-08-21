@@ -3,16 +3,16 @@ from typing import Optional
 from time import time
 
 
-class User(BaseModel):
-    id: int
+class UserBase(BaseModel):
     username: str
+    password_hash: str
     email: str
-    password: str
 
-    # @field_validator('password')
-    # def min_password_len(cls, v):
-    #     assert len(v) > 8, 'password length must be greater than 8'
-    #     return v
+class UserCreate(UserBase):
+    pass
+
+class User(UserBase):
+    id: int
 
     class Config:
         orm_mode = True

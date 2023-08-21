@@ -41,7 +41,7 @@ class FaceRecognition:
     known_face_names = []
 
     def format_result(self):
-        result = [
+        return [
             {
                 "location": {
                     "top": face_loc[0],
@@ -53,7 +53,6 @@ class FaceRecognition:
             }
             for face_loc, face_name in zip(self.face_locations, self.face_details)
         ]
-        return result
 
     def encode_faces(self, user: User, face_name: str):
         temp_image_filenames, temp_image_folder = BucketActions.get_images_from_folder(user_id=user.id,
