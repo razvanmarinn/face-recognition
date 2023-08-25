@@ -30,3 +30,10 @@ def register_new_user(db: Session, user: schema.UserCreate):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+def register_in_history(db: Session, item: schema.RecognitionHistory):
+    db_item = models.RecognitionHistory(path = item.path, user_id = item.user_id, face_name = item.face_name, timestamp = item.timestamp, success_status = item.success_status)
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item

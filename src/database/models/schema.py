@@ -43,3 +43,14 @@ class Image(ImageCreate):
 
     class Config:
         orm_mode = True
+
+
+class RecognitionHistory(BaseModel):
+    path: str
+    user_id: int
+    face_name: str
+    timestamp: float
+    success_status: bool
+
+    class Config:
+        orm_mode = True

@@ -3,10 +3,11 @@ from src.database.connect_to_db import get_db
 from sqlalchemy.orm import Session
 from src.flows.recognize import FaceRecognition
 from src.flows.add_face import add_face
-from src.database.upload_to_db import upload_path_to_db
-from src.database.models.schema import Image, ImageCreate, User
+from src.database.upload_to_db import upload_path_to_db, register_in_history
+from src.database.models.schema import Image, ImageCreate, User, RecognitionHistory
+from time import time
 
-recognition_router = APIRouter(prefix='/face_recognition', tags=['face_recognition'] )
+recognition_router = APIRouter(prefix='/face_recognition', tags=['face_recognition'])
 
 face_recognition = FaceRecognition()
 
@@ -26,10 +27,20 @@ async def face_recognition_add_face(name: str = Form(...), image: UploadFile = F
 
 
 @recognition_router.post("/recognize")
-async def recognize(face_name: str = Form(...), image: UploadFile = File(...)):
+async def recognize(face_name: str = Form(...), image: UploadFile = File(...), db: Session = Depends(get_db)):
+    timestamp = time()
     image_content = await image.read()
     file_size = len(image_content)
-    user = User(id=11, email="test", password="test", username="test")
+    user = User(id = 11 , email="test", password_hash="test", username="test")
     image = Image(name="temp", size=file_size, user_id=user.id)
     face_recognition.encode_faces(user, face_name)
-    return face_recognition.recognize(image_content)
+    result = face_recognition.recognize(image_content)
+    print(result)
+    if result[0]['details']['name'] == face_name:
+        status = True
+    else:
+        status = False
+    register_in_history(db, item=RecognitionHistory(path=image.path, user_id=user.id, face_name=face_name,
+                                                    timestamp=timestamp, success_status=status))
+
+    return result
