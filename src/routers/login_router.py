@@ -4,7 +4,7 @@ from src.database.upload_to_db import register_new_user
 from sqlalchemy.orm import Session
 from src.database.models.schema import Image, ImageCreate, UserCreate, User
 from src.database.models.models import User as UserModel
-from utils import encrypt, check_password
+from src.utils import encrypt, check_password
 
 login_router = APIRouter(prefix='/login', tags=['login'])
 

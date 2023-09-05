@@ -74,6 +74,7 @@ class FaceRecognition:
         delete_temp_files(temp_image_folder)
 
     def recognize(self, image_bytes: bytes):
+
         face_image = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
 
         self.face_locations = face_recognition.face_locations(face_image)
@@ -89,7 +90,7 @@ class FaceRecognition:
                     best_match_index = np.argmin(face_distances)
                     name = self.known_face_names[best_match_index] if matches[best_match_index] else "Unknown"
                     confidence = FaceConfidence(face_distances[best_match_index]).calculate_confidence()
-                    self.face_details.append({'name': {name}, 'confidence_level': {confidence}})
+                    self.face_details.append({'name': name, 'confidence_level': confidence})
                 else:
                     self.face_details.append({'name': 'unknown', 'confidence_level': ''})
 

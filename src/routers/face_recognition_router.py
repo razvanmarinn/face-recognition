@@ -8,9 +8,8 @@ from src.database.models.schema import Image, ImageCreate, User, RecognitionHist
 from time import time
 
 recognition_router = APIRouter(prefix='/face_recognition', tags=['face_recognition'])
-
 face_recognition = FaceRecognition()
-
+#TODO : Fix small bug after recognizing multiple times
 
 @recognition_router.post("/add_face")
 async def face_recognition_add_face(name: str = Form(...), image: UploadFile = File(...),
@@ -35,7 +34,6 @@ async def recognize(face_name: str = Form(...), image: UploadFile = File(...), d
     image = Image(name="temp", size=file_size, user_id=user.id)
     face_recognition.encode_faces(user, face_name)
     result = face_recognition.recognize(image_content)
-    print(result)
     if result[0]['details']['name'] == face_name:
         status = True
     else:
