@@ -9,7 +9,7 @@ from time import time
 
 recognition_router = APIRouter(prefix='/face_recognition', tags=['face_recognition'])
 face_recognition = FaceRecognition()
-#TODO : Fix small bug after recognizing multiple times
+
 
 @recognition_router.post("/add_face")
 async def face_recognition_add_face(name: str = Form(...), image: UploadFile = File(...),
@@ -30,7 +30,7 @@ async def recognize(face_name: str = Form(...), image: UploadFile = File(...), d
     timestamp = time()
     image_content = await image.read()
     file_size = len(image_content)
-    user = User(id = 11 , email="test", password_hash="test", username="test")
+    user = User(id=11, email="test", password_hash="test", username="test")
     image = Image(name="temp", size=file_size, user_id=user.id)
     face_recognition.encode_faces(user, face_name)
     result = face_recognition.recognize(image_content)

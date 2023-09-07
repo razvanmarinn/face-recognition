@@ -34,13 +34,11 @@ class FaceConfidence:
 
 
 class FaceRecognition:
-    face_locations = []
-    face_encodings = []
-    face_details = []
     known_face_encodings = []
     known_face_names = []
 
-    def format_result(self):
+    @staticmethod
+    def format_result(face_locations, face_details):
         return [
             {
                 "location": {
@@ -51,10 +49,12 @@ class FaceRecognition:
                 },
                 "details": face_name
             }
-            for face_loc, face_name in zip(self.face_locations, self.face_details)
+            for face_loc, face_name in zip(face_locations, face_details)
         ]
 
     def encode_faces(self, user: User, face_name: str):
+        self.known_face_encodings = []
+        self.known_face_names = []
         temp_image_filenames, temp_image_folder = BucketActions.get_images_from_folder(user_id=user.id,
                                                                                        face_name=face_name)
         for image_filename in temp_image_filenames:
@@ -77,21 +77,22 @@ class FaceRecognition:
 
         face_image = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
 
-        self.face_locations = face_recognition.face_locations(face_image)
-        self.face_encodings = face_recognition.face_encodings(face_image, self.face_locations)
+        face_locations = face_recognition.face_locations(face_image)
+        face_encodings = face_recognition.face_encodings(face_image, face_locations)
+        face_details = []
 
-        for face_encoding in self.face_encodings:
+        for face_encoding in face_encodings:
             matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding)
             if not self.known_face_encodings:
-                self.face_details.append({'name': 'unknown', 'confidence_level': ''})
+                face_details.append({'name': 'unknown', 'confidence_level': ''})
             else:
                 face_distances = face_recognition.face_distance(self.known_face_encodings, face_encoding)
                 if face_distances.size > 0:
                     best_match_index = np.argmin(face_distances)
                     name = self.known_face_names[best_match_index] if matches[best_match_index] else "Unknown"
                     confidence = FaceConfidence(face_distances[best_match_index]).calculate_confidence()
-                    self.face_details.append({'name': name, 'confidence_level': confidence})
+                    face_details.append({'name': name, 'confidence_level': confidence})
                 else:
-                    self.face_details.append({'name': 'unknown', 'confidence_level': ''})
+                    face_details.append({'name': 'unknown', 'confidence_level': ''})
 
-        return self.format_result()
+        return self.format_result(face_locations, face_details)
