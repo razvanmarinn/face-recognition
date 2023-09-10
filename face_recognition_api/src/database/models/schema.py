@@ -8,8 +8,10 @@ class UserBase(BaseModel):
     password_hash: str
     email: str
 
+
 class UserCreate(UserBase):
     pass
+
 
 class User(UserBase):
     id: int
@@ -27,6 +29,7 @@ class ImageCreate(BaseModel):
         super().__init__(**data)
         if self.path is None:
             self.path = self.generate_path()
+
     def generate_path(self):
         timestamp = time()
         return f"faces/{self.user_id}/{self.name}/{self.name}_{timestamp}.jpg"
@@ -39,7 +42,6 @@ class Image(ImageCreate):
     def size_must_be_positive(cls, v):
         assert v > 0, 'size must be positive'
         return v
-
 
     class Config:
         orm_mode = True

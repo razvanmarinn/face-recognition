@@ -8,7 +8,9 @@ from src.cloud_bucket.bucket_actions import BucketActions
 
 def add_face(path, image_bytes):
     try:
-        write_image(path, image_bytes)
+        encoded_image_bytes = write_image(path, image_bytes)
+        BucketActions.upload_to_bucket(path, encoded_image_bytes)
+
     except Exception as e:
         print(e)
 
@@ -19,7 +21,6 @@ def write_image(path, image_bytes: bytes):
 
     _, encoded_image = cv2.imencode('.jpg', image)
     encoded_image_bytes = encoded_image.tobytes()
-
-    BucketActions.upload_to_bucket(path, encoded_image_bytes)
+    return encoded_image_bytes
 
 

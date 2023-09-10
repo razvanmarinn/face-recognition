@@ -1,8 +1,9 @@
+
 from fastapi import APIRouter, UploadFile, File, Form, Depends
 from src.database.connect_to_db import get_db
 from src.database.upload_to_db import register_new_user
 from sqlalchemy.orm import Session
-from src.database.models.schema import Image, ImageCreate, UserCreate, User
+from src.database.models.schema import UserCreate, User
 from src.database.models.models import User as UserModel
 from src.utils import encrypt, check_password
 

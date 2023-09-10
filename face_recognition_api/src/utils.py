@@ -26,11 +26,3 @@ def delete_temp_files(temp_local_folder):
             print(e)
     os.rmdir(temp_local_folder)
     print("Deleted temp files")
-
-
-def encrypt(password):
-    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-
-
-def check_password(password, hashed_password):
-    return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))

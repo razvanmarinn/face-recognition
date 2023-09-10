@@ -4,15 +4,6 @@ from sqlalchemy.orm import relationship
 from src.database.database import Base
 
 
-class User(Base):
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String)
-    password = Column(String)
-    email = Column(String, unique=True, index=True)
-
-
 class Image(Base):
     __tablename__ = "image_locations"
 
