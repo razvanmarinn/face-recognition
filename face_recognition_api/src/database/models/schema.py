@@ -5,8 +5,8 @@ from time import time
 
 class UserBase(BaseModel):
     username: str
-    password_hash: str
-    email: str
+    password_hash: Optional[str] = None
+    email: Optional[str] = None
 
 
 class UserCreate(UserBase):

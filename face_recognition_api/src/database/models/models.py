@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Float
+from sqlalchemy import Boolean, Column, Integer, String, DateTime, Float
 from sqlalchemy.orm import relationship
 
 from src.database.database import Base
@@ -7,11 +7,11 @@ from src.database.database import Base
 class Image(Base):
     __tablename__ = "image_locations"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String, index=True)
     path = Column(String, index=True)
-    size = Column(Integer)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    size = Column(Float)
+    user_id = Column(Integer)
 
 
 class RecognitionHistory(Base):
@@ -19,7 +19,7 @@ class RecognitionHistory(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     path = Column(String, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer)
     face_name = Column(String, index=True)
     timestamp = Column(Float, index=True)
     success_status = Column(Boolean, index=True)

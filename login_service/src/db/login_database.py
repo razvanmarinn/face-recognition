@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:r@localhost:5432/face-recognition-api"
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:r@localhost:5432/login-service"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL

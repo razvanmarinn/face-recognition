@@ -1,24 +1,15 @@
+from fastapi import APIRouter, Form, Depends, HTTPException
+from starlette import status
 
-from fastapi import APIRouter, UploadFile, File, Form, Depends
-from src.database.connect_to_db import get_db
-from src.database.upload_to_db import register_new_user
+from src.db.connect_to_db import get_db
+from src.db.upload_to_db import register_new_user
 from sqlalchemy.orm import Session
-from src.database.models.schema import UserCreate, User
-from src.database.models.models import User as UserModel
+from src.db.models.schema import UserCreate
+from src.db.models.models import User as UserModel
 from src.utils import encrypt, check_password
+from src.jwt_token.jwt_bearer import JWTBearer
 
 login_router = APIRouter(prefix='/login', tags=['login'])
-
-
-@login_router.post("/login")
-async def login(username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
-    login_user = db.query(UserModel).filter(UserModel.username == username).first()
-    if not login_user:
-        return "User not found"
-    if not check_password(password, login_user.password):
-        return "Wrong password"
-
-    return "success"
 
 
 @login_router.post("/register")
@@ -32,3 +23,26 @@ async def register(username: str = Form(...), password: str = Form(...), email: 
 @login_router.post("/logout")
 async def logout(username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
     return {"message": "success"}
+
+
+@login_router.post("/login")
+async def login(username: str, password: str, db: Session = Depends(get_db)):
+
+    user = authenticate_user(username, password, db)
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+
+    print(user)
+    access_token =  JWTBearer.signJWT(user.id, user.username)
+
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+def authenticate_user(username: str, password: str, db):
+    login_user = db.query(UserModel).filter(UserModel.username == username).first()
+    if not login_user:
+        return "User not found"
+    if not check_password(password, login_user.password):
+        return "Wrong password"
+    return login_user
