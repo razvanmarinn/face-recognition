@@ -41,7 +41,9 @@ public class Main {
 
             for (ConsumerRecord<String, byte[]> record : records) {
                 byte[] imageBytes = record.value();
-                String userId = record.key();
+                String jwtToken = record.key();
+                String userId = JWTHandler.getUserIdFromJWT(jwtToken);
+                System.out.println(userId);
 
                 System.out.println("Received image data with size: " + imageBytes.length + " bytes for user: " + userId);
 
@@ -56,10 +58,10 @@ public class Main {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
                 MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
                 entityBuilder.addBinaryBody("image", imageBytes, ContentType.APPLICATION_OCTET_STREAM, imageFileName);
                 entityBuilder.addTextBody("face_name", faceName, ContentType.TEXT_PLAIN);
+                entityBuilder.addTextBody("authorization", jwtToken, ContentType.TEXT_PLAIN);
 
                 try {
                     HttpPost request = new HttpPost(apiUrl);
