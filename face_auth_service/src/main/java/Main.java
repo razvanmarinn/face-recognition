@@ -1,5 +1,6 @@
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -9,7 +10,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,10 +17,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 public class Main {
     public static void main(String[] args) {
@@ -28,8 +26,8 @@ public class Main {
         KafkaResponseProducer _kafkaResponseProducer = new KafkaResponseProducer();
         HttpClient httpClient = HttpClients.createDefault();
 
-        String apiUrl = "http://127.0.0.1:8000/face_recognition/recognize";
-        String faceName = "Razvan";
+        String apiUrl = System.getenv("API_URL");
+        String faceName = System.getenv("FACE_NAME");
 
         Map<String, Integer> userImageCount = new HashMap<>();
 
@@ -43,7 +41,6 @@ public class Main {
                 byte[] imageBytes = record.value();
                 String jwtToken = record.key();
                 String userId = JWTHandler.getUserIdFromJWT(jwtToken);
-                System.out.println(userId);
 
                 System.out.println("Received image data with size: " + imageBytes.length + " bytes for user: " + userId);
 
@@ -61,14 +58,13 @@ public class Main {
                 MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
                 entityBuilder.addBinaryBody("image", imageBytes, ContentType.APPLICATION_OCTET_STREAM, imageFileName);
                 entityBuilder.addTextBody("face_name", faceName, ContentType.TEXT_PLAIN);
-                entityBuilder.addTextBody("authorization", jwtToken, ContentType.TEXT_PLAIN);
 
                 try {
                     HttpPost request = new HttpPost(apiUrl);
+                    request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
                     request.setEntity(entityBuilder.build());
                     HttpResponse response = httpClient.execute(request);
                     String responseContent = EntityUtils.toString(response.getEntity());
-                    System.out.println(responseContent);
 
                     double confidenceLevel = parseConfidenceLevel(responseContent);
 
