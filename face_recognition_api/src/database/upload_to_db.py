@@ -39,3 +39,10 @@ def register_user_in_sip(db: Session, shared_pool_id: int, user_id: int):
     db.commit()
     db.refresh(db_item)
     return db_item
+
+def add_face_to_sip(db: Session, image: Image, image_pool_id: int):
+    db_item = models.SharedImagePoolFaces(image_pool_id=image_pool_id, user_id=image.user_id, face_name=image.name)
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item

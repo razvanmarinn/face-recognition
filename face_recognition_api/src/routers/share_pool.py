@@ -1,15 +1,17 @@
 from fastapi import APIRouter, UploadFile, File, Form, Depends
 from src.database.connect_to_db import get_db
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
+from sqlalchemy import func, and_
 from src.flows.recognize import FaceRecognition
 from src.jwt_handler import decode_jwt_token
 from src.flows.add_face import add_face
 from src.database.upload_to_db import upload_path_to_db, register_in_history, register_shared_image_pool, \
-    register_user_in_sip
+    register_user_in_sip, add_face_to_sip
 from src.database.models.schema import Image, ImageCreate, User, RecognitionHistory, SharedImagePool, \
     SharedImagePoolFaces, SharedImagePoolMembers, SharedImagePoolPermissions
 from src.database.models.models import SharedImagePool as SharedImagePoolModel
 from src.database.models.models import SharedImagePoolMembers as SharedImagePoolMembersModel
+from src.database.models.models import Image as ImageModel
 from time import time
 
 shared_image_pool_router = APIRouter(prefix='/shared_image_pool', tags=['shared_image_pool'])
@@ -46,3 +48,26 @@ async def get_all_sip_for_user(token_payload: dict = Depends(decode_jwt_token),
 
     concatened_list = list_of_sips_owned_by_user + list_of_sips_shared_with_user
     return concatened_list
+
+@shared_image_pool_router.post("/add_face_to_group")
+async def add_face_to_group(group_name: str = Form(...), face_name: str = Form(...), token_payload: dict = Depends(decode_jwt_token),
+                               db: Session = Depends(get_db)):
+    subquery = (
+        db.query(ImageModel.name, func.min(ImageModel.id).label("min_id"))
+        .filter(ImageModel.user_id == token_payload["user_id"])
+        .filter(ImageModel.name == face_name)
+        .group_by(ImageModel.name)
+        .subquery()
+    )
+
+    alias = aliased(ImageModel, name="im")
+
+    image = (
+        db.query(alias)
+        .join(subquery, and_(alias.name == subquery.c.name, alias.id == subquery.c.min_id))
+        .first()
+    )
+    image_pool_id = db.query(SharedImagePoolModel).filter(SharedImagePoolModel.image_pool_name == group_name).first().id
+    add_face_to_sip(db, image, image_pool_id)
+
+    return {"message": "success"}
