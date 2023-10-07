@@ -11,9 +11,12 @@ from src.utils import encrypt, check_password
 from src.jwt_token.jwt_bearer import JWTBearer
 
 login_router = APIRouter(prefix='/login', tags=['login'])
+
+
 class UserLogin(BaseModel):
     username: str
     password: str
+
 
 @login_router.post("/register")
 async def register(username: str = Form(...), password: str = Form(...), email: str = Form(...), db: Session = Depends(
@@ -30,14 +33,13 @@ async def logout(username: str = Form(...), password: str = Form(...), db: Sessi
 
 @login_router.post("/login")
 async def login(user_data: UserLogin, db: Session = Depends(get_db)):
-
     user = authenticate_user(user_data.username, user_data.password, db)
 
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
     print(user)
-    access_token =  JWTBearer.signJWT(user.id, user.username)
+    access_token = JWTBearer.signJWT(user.id, user.username)
 
     return {"access_token": access_token, "token_type": "bearer"}
 

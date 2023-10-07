@@ -1,5 +1,5 @@
 from pydantic import BaseModel, field_validator
-from typing import Optional
+from typing import Optional, List
 from time import time
 
 
@@ -56,3 +56,37 @@ class RecognitionHistory(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class SharedImagePool(BaseModel):
+    owner_id: int
+    image_pool_name: str
+
+    class Config:
+        orm_mode = True
+
+class SharedImagePoolFaces(BaseModel):
+    image_pool_id: int
+    user_id: int
+    face_name: str
+
+    class Config:
+        orm_mode = True
+
+class SharedImagePoolMembers(BaseModel):
+    image_pool_id: int
+    user_id: int
+
+    class Config:
+        orm_mode = True
+
+class SharedImagePoolPermissions(BaseModel):
+    image_pool_id: int
+    user_id: int
+    read: bool
+    write: bool
+    delete: bool
+
+    class Config:
+        orm_mode = True
+
