@@ -41,7 +41,7 @@ async def add_user_to_group(group_name: str = Form(...), user_id: int = Form(...
 
 @shared_image_pool_router.get("/get_all_sip_for_user")
 def get_all_sip_for_user(token_payload: dict = Depends(decode_jwt_token),
-                               db: Session = Depends(get_db)):
+                         db: Session = Depends(get_db)):
     # TODO: Make the output more readable
     user_id = token_payload['user_id']
     list_of_sips_owned_by_user = db.query(SharedImagePoolModel).filter(SharedImagePoolModel.owner_id == user_id).all()
@@ -56,9 +56,11 @@ def get_all_sip_for_user(token_payload: dict = Depends(decode_jwt_token),
         concatened_list.append({"id": item.image_pool_id, "owner": False})
     return concatened_list
 
+
 @shared_image_pool_router.post("/add_face_to_group")
-async def add_face_to_group(group_name: str = Form(...), face_name: str = Form(...), token_payload: dict = Depends(decode_jwt_token),
-                               db: Session = Depends(get_db)):
+async def add_face_to_group(group_name: str = Form(...), face_name: str = Form(...),
+                            token_payload: dict = Depends(decode_jwt_token),
+                            db: Session = Depends(get_db)):
     subquery = (
         db.query(ImageModel.name, func.min(ImageModel.id).label("min_id"))
         .filter(ImageModel.user_id == token_payload["user_id"])
@@ -77,8 +79,8 @@ async def add_face_to_group(group_name: str = Form(...), face_name: str = Form(.
     image_pool_id = db.query(SharedImagePoolModel).filter(SharedImagePoolModel.image_pool_name == group_name).first().id
     add_face_to_sip(db, image, image_pool_id)
     image_folder = image.path.split('/')[0] + '/' + image.path.split('/')[1] + '/' + image.path.split('/')[2] + '/'
-    print(image_folder)
 
-    BucketActions.copy_within_bucket(source_folder=image_folder, destination_folder=f'shared_pool_images/{image_pool_id}/{face_name}')
+    BucketActions.copy_within_bucket(source_folder=image_folder,
+                                     destination_folder=f'shared_pool_images/{image_pool_id}/{face_name}')
 
     return {"message": "success"}

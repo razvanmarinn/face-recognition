@@ -43,19 +43,17 @@ async def recognize(
         file_size = len(image_content)
         user = User(id=user_id, username=username)
         image = Image(name="temp", size=file_size, user_id=user.id)
-        list_of_sip = get_all_sip_for_user(token_payload=token_payload, db=db)
-        list_of_ids = [item['id'] for item in list_of_sip]
-        print(list_of_ids)
-        if list_of_sip:
-            face_recognition.encode_faces(user= user, face_name=face_name, pool_mode=True,
+        list_of_ids = [item['id'] for item in get_all_sip_for_user(token_payload=token_payload, db=db)]
+
+        if len(list_of_ids) > 0:
+            face_recognition.encode_faces(user=user, face_name=face_name, pool_mode=True,
                                           pool_list=list_of_ids)
         else:
             face_recognition.encode_faces(user, face_name)
+
         result = face_recognition.recognize(image_content)
-        if result[0]['details']['name'] == face_name:
-            status = True
-        else:
-            status = False
+        status = result[0]['details']['name'] == face_name
+
         register_in_history(
             db, item=RecognitionHistory(
                 path=image.path,
@@ -67,5 +65,6 @@ async def recognize(
         )
 
         return result
+
     except Exception as e:
         return {"message": str(e), "status": "failed"}
