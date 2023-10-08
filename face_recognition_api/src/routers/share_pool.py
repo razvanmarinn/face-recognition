@@ -1,6 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, Form, Depends
 from src.database.connect_to_db import get_db
 from sqlalchemy.orm import Session, aliased
+from src.flows.add_face import add_face
 from sqlalchemy import func, and_
 from src.flows.recognize import FaceRecognition
 from src.jwt_handler import decode_jwt_token
@@ -12,6 +13,7 @@ from src.database.models.schema import Image, ImageCreate, User, RecognitionHist
 from src.database.models.models import SharedImagePool as SharedImagePoolModel
 from src.database.models.models import SharedImagePoolMembers as SharedImagePoolMembersModel
 from src.database.models.models import Image as ImageModel
+from src.cloud_bucket.bucket_actions import BucketActions
 from time import time
 
 shared_image_pool_router = APIRouter(prefix='/shared_image_pool', tags=['shared_image_pool'])
@@ -38,7 +40,7 @@ async def add_user_to_group(group_name: str = Form(...), user_id: int = Form(...
 
 
 @shared_image_pool_router.get("/get_all_sip_for_user")
-async def get_all_sip_for_user(token_payload: dict = Depends(decode_jwt_token),
+def get_all_sip_for_user(token_payload: dict = Depends(decode_jwt_token),
                                db: Session = Depends(get_db)):
     # TODO: Make the output more readable
     user_id = token_payload['user_id']
@@ -46,7 +48,12 @@ async def get_all_sip_for_user(token_payload: dict = Depends(decode_jwt_token),
     list_of_sips_shared_with_user = db.query(SharedImagePoolMembersModel).filter(
         SharedImagePoolMembersModel.user_id == user_id).all()
 
-    concatened_list = list_of_sips_owned_by_user + list_of_sips_shared_with_user
+    concatened_list = []
+    for item in list_of_sips_owned_by_user:
+        concatened_list.append({"id": item.id, "owner": True})
+
+    for item in list_of_sips_shared_with_user:
+        concatened_list.append({"id": item.image_pool_id, "owner": False})
     return concatened_list
 
 @shared_image_pool_router.post("/add_face_to_group")
@@ -69,5 +76,9 @@ async def add_face_to_group(group_name: str = Form(...), face_name: str = Form(.
     )
     image_pool_id = db.query(SharedImagePoolModel).filter(SharedImagePoolModel.image_pool_name == group_name).first().id
     add_face_to_sip(db, image, image_pool_id)
+    image_folder = image.path.split('/')[0] + '/' + image.path.split('/')[1] + '/' + image.path.split('/')[2] + '/'
+    print(image_folder)
+
+    BucketActions.copy_within_bucket(source_folder=image_folder, destination_folder=f'shared_pool_images/{image_pool_id}/{face_name}')
 
     return {"message": "success"}

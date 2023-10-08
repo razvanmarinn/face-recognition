@@ -40,7 +40,13 @@ def register_user_in_sip(db: Session, shared_pool_id: int, user_id: int):
     db.refresh(db_item)
     return db_item
 
+
 def add_face_to_sip(db: Session, image: Image, image_pool_id: int):
+    #  TODO: Think about this
+    test = db.query(models.SharedImagePoolFaces).filter(models.SharedImagePoolFaces.image_pool_id == image_pool_id).filter(
+        models.SharedImagePoolFaces.user_id == image.user_id).filter(models.SharedImagePoolFaces.face_name == image.name).first()
+    if test:
+        return {"message": "Face already exists in this group but you can add the images"}
     db_item = models.SharedImagePoolFaces(image_pool_id=image_pool_id, user_id=image.user_id, face_name=image.name)
     db.add(db_item)
     db.commit()

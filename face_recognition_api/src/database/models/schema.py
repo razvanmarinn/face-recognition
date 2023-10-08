@@ -34,6 +34,10 @@ class ImageCreate(BaseModel):
         timestamp = time()
         return f"faces/{self.user_id}/{self.name}/{self.name}_{timestamp}.jpg"
 
+    def regenerate_path_for_sip(self):
+        timestamp = time()
+        return f"shared_pool_images/{self.name}/{self.name}_{timestamp}.jpg"
+
 
 class Image(ImageCreate):
     size: int
@@ -65,6 +69,7 @@ class SharedImagePool(BaseModel):
     class Config:
         orm_mode = True
 
+
 class SharedImagePoolFaces(BaseModel):
     image_pool_id: int
     user_id: int
@@ -73,12 +78,14 @@ class SharedImagePoolFaces(BaseModel):
     class Config:
         orm_mode = True
 
+
 class SharedImagePoolMembers(BaseModel):
     image_pool_id: int
     user_id: int
 
     class Config:
         orm_mode = True
+
 
 class SharedImagePoolPermissions(BaseModel):
     image_pool_id: int
@@ -89,4 +96,3 @@ class SharedImagePoolPermissions(BaseModel):
 
     class Config:
         orm_mode = True
-

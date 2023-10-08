@@ -22,5 +22,3 @@ def write_image(path, image_bytes: bytes):
     _, encoded_image = cv2.imencode('.jpg', image)
     encoded_image_bytes = encoded_image.tobytes()
     return encoded_image_bytes
-
-

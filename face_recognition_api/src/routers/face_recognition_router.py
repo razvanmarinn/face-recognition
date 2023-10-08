@@ -6,8 +6,8 @@ from src.jwt_handler import decode_jwt_token
 from src.flows.add_face import add_face
 from src.database.upload_to_db import upload_path_to_db, register_in_history
 from src.database.models.schema import Image, ImageCreate, User, RecognitionHistory
+from src.routers.share_pool import get_all_sip_for_user
 from time import time
-
 
 recognition_router = APIRouter(prefix='/face_recognition', tags=['face_recognition'])
 face_recognition = FaceRecognition()
@@ -43,7 +43,14 @@ async def recognize(
         file_size = len(image_content)
         user = User(id=user_id, username=username)
         image = Image(name="temp", size=file_size, user_id=user.id)
-        face_recognition.encode_faces(user, face_name)
+        list_of_sip = get_all_sip_for_user(token_payload=token_payload, db=db)
+        list_of_ids = [item['id'] for item in list_of_sip]
+        print(list_of_ids)
+        if list_of_sip:
+            face_recognition.encode_faces(user= user, face_name=face_name, pool_mode=True,
+                                          pool_list=list_of_ids)
+        else:
+            face_recognition.encode_faces(user, face_name)
         result = face_recognition.recognize(image_content)
         if result[0]['details']['name'] == face_name:
             status = True

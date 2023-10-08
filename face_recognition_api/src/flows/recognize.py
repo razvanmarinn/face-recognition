@@ -6,6 +6,7 @@ import math
 from src.database.models.schema import User, Image
 from src.cloud_bucket.bucket_actions import BucketActions
 from src.utils import delete_temp_files
+from typing import List
 
 
 class FaceConfidence:
@@ -52,11 +53,20 @@ class FaceRecognition:
             for face_loc, face_name in zip(face_locations, face_details)
         ]
 
-    def encode_faces(self, user: User, face_name: str):
+    def encode_faces(self, user: User, face_name: str, pool_mode: bool = False, pool_list: List[int] = None):
         self.known_face_encodings = []
         self.known_face_names = []
         temp_image_filenames, temp_image_folder = BucketActions.get_images_from_folder(user_id=user.id,
                                                                                        face_name=face_name)
+        if pool_mode:
+            for pool_id in pool_list:
+                temp_pool_image_filenames, temp_pool_image_folder = BucketActions.get_images_from_folder(
+                    pool_id=pool_id,
+                    face_name=face_name,
+                    pool_mode=True,
+                    path=temp_image_folder)
+                temp_image_filenames.extend(temp_pool_image_filenames)
+
         for image_filename in temp_image_filenames:
             image_path = os.path.join(temp_image_folder, image_filename)
 
