@@ -80,6 +80,11 @@ def get_all_sip_for_user(token_payload: dict = Depends(decode_jwt_token),
 async def add_face_to_group(group_name: str = Form(...), face_name: str = Form(...),
                             token_payload: dict = Depends(decode_jwt_token),
                             db: Session = Depends(get_db)):
+    def check_for_user_permissions(input_perms: SharedImagePoolPermissions):
+        if input_perms.write:
+            return True
+        return False
+
     user_permissions = await get_permissions(db, group_name, token_payload)
     if not check_for_user_permissions(user_permissions):
         return {"message": "You don't have permissions to add faces to this group only to view"}
@@ -123,7 +128,3 @@ async def get_permissions(db, group_name, token_payload):
     return user_permissions
 
 
-def check_for_user_permissions(user_permissions: SharedImagePoolPermissions):
-    if user_permissions.write:
-        return True
-    return False

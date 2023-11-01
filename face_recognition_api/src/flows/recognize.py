@@ -83,6 +83,28 @@ class FaceRecognition:
 
         delete_temp_files(temp_image_folder)
 
+    def encode_faces_for_face_auth(self, user: User):
+        self.known_face_encodings = []
+        self.known_face_names = []
+        temp_image_filenames, temp_image_folder = BucketActions.get_images_from_folder(user_id=user.id,
+                                                                                       face_auth=True)
+
+        for image_filename in temp_image_filenames:
+            image_path = os.path.join(temp_image_folder, image_filename)
+
+            face_image = face_recognition.load_image_file(image_path)
+            face_encodings = face_recognition.face_encodings(face_image)
+
+            if len(face_encodings) > 0:
+                face_encoding = face_encodings[0]
+                self.known_face_encodings.append(face_encoding)
+                self.known_face_names.append("test")
+                print(f"Face encoding added for test from {image_filename}")
+            else:
+                print(f"No face found in {image_filename}")
+
+        delete_temp_files(temp_image_folder)
+
     def recognize(self, image_bytes: bytes):
 
         face_image = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
