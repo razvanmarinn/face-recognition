@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from src.routers.face_recognition_router import recognition_router as face_recognition_router
 from src.routers.share_pool import shared_image_pool_router
 from src.database.models import models, schema
@@ -9,6 +10,13 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 app.include_router(face_recognition_router)
 app.include_router(shared_image_pool_router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins, you can specify specific origins if needed
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
 if __name__ == "__main__":
     import uvicorn
 
