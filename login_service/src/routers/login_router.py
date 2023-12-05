@@ -35,7 +35,7 @@ async def logout(username: str = Form(...), password: str = Form(...), db: Sessi
 async def login(user_data: UserLogin, db: Session = Depends(get_db)):
     user = authenticate_user(user_data.username, user_data.password, db)
 
-    if not user:
+    if isinstance(user, str):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
     print(user)
