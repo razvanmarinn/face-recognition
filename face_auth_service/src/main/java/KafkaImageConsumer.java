@@ -10,7 +10,7 @@ import java.io.*;
 public class KafkaImageConsumer {
     private Properties properties;
     public KafkaConsumer<String, byte[]> _consumer;
-    private String consumeTopic = "test";
+    private String consumeTopic = "test2";
 
     public void setProperties() {
         this.properties = new Properties();
