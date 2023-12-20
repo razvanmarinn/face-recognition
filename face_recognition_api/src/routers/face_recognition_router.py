@@ -8,6 +8,8 @@ from src.database.upload_to_db import upload_path_to_db, register_in_history
 from src.database.models.schema import Image, ImageCreate, User, RecognitionHistory
 from src.routers.share_pool import get_all_sip_for_user
 from time import time
+from src.kafka.KafkaHandler import KafkaHandler
+from typing import List, Optional
 
 recognition_router = APIRouter(prefix='/face_recognition', tags=['face_recognition'])
 face_recognition = FaceRecognition()
@@ -35,7 +37,7 @@ async def face_recognition_add_face(name: str = Form("Default"), image: UploadFi
 
 @recognition_router.post("/recognize")
 async def recognize(
-        face_name: str = Form(...),
+        face_name: Optional[str] = Form(None),
         image: UploadFile = File(...),
         token_payload: dict = Depends(decode_jwt_token),
         db: Session = Depends(get_db),
@@ -73,6 +75,28 @@ async def recognize(
         # )
 
         return result
+
+    except Exception as e:
+        return {"message": str(e), "status": "failed"}
+
+
+@recognition_router.post("/face_auth_recognize")
+async def face_auth_recognize(
+        username: str = Form(...),
+        user_id: int = Form(...),
+        list_of_images: List[UploadFile] = File(...),
+):
+    try:
+        kafka_handler = KafkaHandler("test2", "face_auth_response")
+
+        await kafka_handler.send_images_to_kafka(list_of_images, user_id)
+
+        recognized = await kafka_handler.wait_for_recognition()
+
+        if recognized:
+            return {"message": "success"}
+        else:
+            return {"message": "recognition failed", "status": "failed"}
 
     except Exception as e:
         return {"message": str(e), "status": "failed"}
