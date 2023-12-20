@@ -56,7 +56,7 @@ const MainPage = () => {
                 body: formData
               });
 
-              console.log('Server Response:', response);
+              console.log('Server Response:', response.text());
             } catch (error) {
               console.error('Error sending data:', error);
             }
