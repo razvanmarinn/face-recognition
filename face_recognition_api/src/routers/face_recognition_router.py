@@ -88,15 +88,23 @@ async def face_auth_recognize(
 ):
     try:
         kafka_handler = KafkaHandler("test2", "face_auth_response")
-
+        # Send images using the existing KafkaHandler instance
         await kafka_handler.send_images_to_kafka(list_of_images, user_id)
 
-        recognized = await kafka_handler.wait_for_recognition()
+        return {"message": "Recognition process initiated", "status_endpoint": "/check_recognition_status"}
+    except Exception as e:
+        return {"message": str(e), "status": "failed"}
+
+
+@recognition_router.get("/check_recognition_status/{user_id}")
+async def check_recognition_status(user_id: int):
+    try:
+        kafka_handler = KafkaHandler("test2", "face_auth_response")
+        recognized = await kafka_handler.wait_for_recognition(user_id)  # Assuming wait_for_recognition takes a user_id
 
         if recognized:
-            return {"message": "success"}
+            return {"message": "Recognition successful", "status": "success"}
         else:
-            return {"message": "recognition failed", "status": "failed"}
-
+            return {"message": "Recognition in progress or failed", "status": "in_progress_or_failed"}
     except Exception as e:
         return {"message": str(e), "status": "failed"}
