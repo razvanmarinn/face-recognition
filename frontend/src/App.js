@@ -1,20 +1,32 @@
-// App.js
-import React from 'react';
-import './App.css';
-import LoginForm from './LoginPage';
+import React, { useContext } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthContext, AuthProvider } from './AuthContext';
+import LoginPage from './LoginPage';
 import MainPage from './MainPage';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Recognize from './Recognize';
 
 function App() {
+  const { isLoggedIn } = useContext(AuthContext);
+
   return (
     <Router>
       <div className="App">
         <Routes>
-          <Route path="/login" element={<LoginForm />} />
-          <Route path="/main" element={<MainPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/home" element={isLoggedIn ? <MainPage /> : <Navigate to="/login" />} />
+          <Route path="/recognize" element={isLoggedIn ? <Recognize /> : <Navigate to="/login" />} />
         </Routes>
       </div>
     </Router>
   );
 }
-export default App;
+
+function Root() {
+  return (
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  );
+}
+
+export default Root;
