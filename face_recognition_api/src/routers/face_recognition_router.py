@@ -82,7 +82,6 @@ async def recognize(
 
 @recognition_router.post("/face_auth_recognize")
 async def face_auth_recognize(
-        username: str = Form(...),
         user_id: int = Form(...),
         list_of_images: List[UploadFile] = File(...),
 ):
@@ -100,7 +99,7 @@ async def face_auth_recognize(
 async def check_recognition_status(user_id: int):
     try:
         kafka_handler = KafkaHandler("test2", "face_auth_response")
-        recognized = await kafka_handler.wait_for_recognition(user_id)  # Assuming wait_for_recognition takes a user_id
+        recognized = await kafka_handler.wait_for_recognition(user_id)
 
         if recognized:
             return {"message": "Recognition successful", "status": "success"}

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import './Recognize.css';
+import './css/Recognize.css';
 
 const Recognize = () => {
   const [stream, setStream] = useState(null);

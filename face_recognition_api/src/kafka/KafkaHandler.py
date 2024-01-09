@@ -73,7 +73,6 @@ class KafkaHandler():
                 print(f"Value: {message.value}")
                 print(f"Timestamp: {message.timestamp}")
 
-
                 if message.value == b'1':
                     self.recognized.set()
                     print("Face recognized")
@@ -92,7 +91,6 @@ class KafkaHandler():
 
     async def wait_for_recognition(self, user_id):
         try:
-            self.user_id = user_id
             await self.start_listener_thread()
 
             await asyncio.wait_for(self.recognized.wait(), timeout=200)

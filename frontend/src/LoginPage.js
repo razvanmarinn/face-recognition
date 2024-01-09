@@ -2,7 +2,7 @@ import React, { useState, useRef, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from './AuthContext';
-import './LoginPage.css';
+import './css/LoginPage.css';
 import Modal from 'react-modal';
 
 const LoginPage = () => {
@@ -29,7 +29,7 @@ const LoginPage = () => {
   };
   
   const handleTakePhoto = async () => {
-    await takePicture();
+    // await takePicture();
     await faceLogin();
     handleCloseModal();
   };
@@ -45,67 +45,65 @@ const LoginPage = () => {
       console.error('Error accessing the camera:', error);
     }
   };
-
-  const takePicture = async () => {
-    if (videoRef.current) {
-      const video = videoRef.current;
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      const imageData = canvas.toDataURL('image/png');
-
-      try {
-        const response = await axios.post('http://127.0.0.1:8000/face_recognition/recognize', {
-          image: imageData,
-          username: username,
-        });
-
-        console.log('Server Response:', response);
-      } catch (error) {
-        console.error('Error sending data:', error);
-      }
-    }
-  };
-
   const faceLogin = async () => {
     if (videoRef.current) {
-      const video = videoRef.current;
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-  
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-  
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-  
-      const imageData = canvas.toDataURL('image/png');
-  
-      try {
-        const response = await axios.post('http://127.0.0.1:8000/face_recognition/recognize', {
-          image: imageData,
-          username: username
-        });
-  
-        if (response.status === 200 && response.data['confidence_level'] >= 90) {
-          setLog();
-          window.location.replace('/home');
-          localStorage.setItem('token_payload', response.data.access_token);
-        } else if (response.status === 401) {
-          setErrorMessage('Face recognition failed. Please try again.');
-        } else {
+        const video = videoRef.current;
+        const captureInterval = 1000;
+        let imagesToSend = [];
 
+        for (let i = 0; i < 7; i++) {
+            await new Promise(resolve => setTimeout(resolve, captureInterval));
+
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(blob => {
+                if (blob) {
+                    imagesToSend.push(blob);
+                }
+            }, 'image/jpeg'); 
         }
-      } catch (error) {
-        console.error('Error sending data:', error);
-      }
-    }
-  };
 
+        const userID = 3;
+        const username = 'x'; 
+
+        const formData = new FormData();
+        formData.append('user_id', userID);
+        formData.append('username', username);
+        imagesToSend.forEach((imageBlob) => {
+            formData.append('list_of_images', imageBlob, 'image.jpg'); 
+        });
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/face_recognition/face_auth_recognize', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+              const wait_for_response = await fetch(`http://127.0.0.1:8000/face_recognition/check_recognition_status/${userID}`, {
+        method: 'GET'
+    });
+              const jsonResponse = await wait_for_response.json(); 
+              console.log(jsonResponse);
+              if (jsonResponse.status === "success") { 
+                  setLog();
+                  localStorage.setItem('token_payload', jsonResponse.access_token); 
+                  navigate('/home');
+              }
+          } else {
+              console.error('Error sending data:', response);
+          }
+        } catch (error) {
+            console.error('Error sending data:', error);
+        }
+    }
+};
   const handleLogin = async (e) => {
     e.preventDefault();
 
