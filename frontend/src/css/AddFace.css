@@ -1,0 +1,41 @@
+.add-face {
+    background-color: #3c5a60;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-family: Arial, sans-serif;
+    padding: 40px;
+    text-align: center;
+}
+
+.add-face h2 {
+    margin-bottom: 20px;
+}
+
+.add-face input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: none;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.add-face button {
+    width: 200px;
+    height: 40px;
+    background-color: #1a3c40;
+    color: white;
+    border: 0.5px solid white; 
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease; 
+}
+
+.add-face button:hover {
+    background-color: #111;
+    border-color: #111; 
+}

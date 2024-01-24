@@ -1,29 +1,35 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback} from 'react';
 import './css/Recognize.css';
 import Navbar from './Navbar';
 
 const Recognize = () => {
   const [stream, setStream] = useState(null);
   const [text, setText] = useState('');
+  const [loading, setLoading] = useState(false);
   const videoRef = useRef();
 
-  useEffect(() => {
-    const startCamera = async () => {
-      try {
-        const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
-        setStream(mediaStream);
-        if (videoRef.current) {
-          videoRef.current.srcObject = mediaStream;
-        }
-      } catch (error) {
-        console.error('Error accessing the camera:', error);
+  const startCamera = useCallback(async () => {
+    setLoading(true);
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      setStream(mediaStream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+        videoRef.current.play();
       }
-    };
-
+    } catch (error) {
+      console.error('Error accessing the camera:', error);
+    }
+    setLoading(false);
+  }, []); // Removed 'stream' from the dependency array
+  
+  useEffect(() => {
     startCamera();
-  }, []);
+  }, [startCamera]);
+  
 
   const takePicture = async () => {
+    setLoading(true);
     if (videoRef.current) {
       const video = videoRef.current;
       const canvas = document.createElement('canvas');
@@ -45,11 +51,9 @@ const Recognize = () => {
             formData.append('image', new Blob([imageBytes]));
             formData.append('face_name', textData);
 
-
             const headers = {
-                Authorization: `Bearer ${localStorage.getItem('token_payload')}`,
-              };
-            
+              Authorization: `Bearer ${localStorage.getItem('token_payload')}`,
+            };
 
             try {
               const response = await fetch('http://127.0.0.1:8000/face_recognition/recognize', {
@@ -57,34 +61,36 @@ const Recognize = () => {
                 headers: headers,
                 body: formData
               });
-              
+
               if (response.ok) {
-                try {
-                  const jsonResponse = await response.json();
-                  console.log('JSON Response:', jsonResponse); 
-              
-                  if (jsonResponse && jsonResponse.length > 0 && jsonResponse[0].details && jsonResponse[0].details.confidence_level) {
-                    const confidenceStr = jsonResponse[0].details.confidence_level;
-                    const confidence = parseFloat(confidenceStr.replace('%', ''));
-              
-                    if (!isNaN(confidence) && confidence >= 70) {
-                      alert('Recognition Successful');
-                    } else {
-                      alert('Recognition Confidence Below 70');
-                    }
+                const jsonResponse = await response.json();
+                console.log('JSON Response:', jsonResponse); 
+                if (jsonResponse && jsonResponse.length > 0 && jsonResponse[0].details && jsonResponse[0].details.confidence_level) {
+                  const confidenceStr = jsonResponse[0].details.confidence_level;
+                  const confidence = parseFloat(confidenceStr.replace('%', ''));
+            
+                  if (!isNaN(confidence) && confidence >= 70) {
+                    alert('Recognition Successful');
                   } else {
-                    alert('Incomplete or Unexpected JSON Structure');
+                    alert('Recognition Confidence Below 70');
                   }
-                } catch (error) {
-                  console.error('Error parsing JSON response:', error);
+                } else {
+                  alert('Incomplete or Unexpected JSON Structure');
                 }
-              } else {
+              } 
+
+              else {
                 throw new Error('Request failed!');
               }
-              
             } catch (error) {
               console.error('Error sending data:', error);
             }
+
+            setLoading(false);
+            if (stream) {
+              stream.getTracks().forEach(track => track.stop());
+            }
+            startCamera(); // Restart the camera here
           };
         }
       }, 'image/png');
@@ -99,26 +105,27 @@ const Recognize = () => {
     <div>
       <Navbar />
       <div className="main-container">
-      <h2>Recognition flow!</h2>
-      <div className="input-section">
-        <input
-          type="text"
-          value={text}
-          onChange={handleTextChange}
-          placeholder="Enter text..."
-          className="text-input" 
-        />
-        {stream && (
-          <div className="video-section">
-            <video ref={videoRef} autoPlay playsInline className="video-element" />
-            <button onClick={takePicture} className="picture-button">Take Picture</button>
-          </div>
-        )}
+        <h2 className="header-text">Recognition Flow!</h2>
+        <div className="input-section">
+          <input
+            type="text"
+            value={text}
+            onChange={handleTextChange}
+            placeholder="Enter text..."
+            className="text-input"
+          />
+          {!loading && stream && (
+            <div className="video-section">
+              <video ref={videoRef} autoPlay playsInline className="video-element" />
+              <button onClick={takePicture} className="picture-button">
+                Take Picture
+              </button>
+            </div>
+          )}
+        </div>
+        {loading && <div className="loading-spinner"></div>}
       </div>
     </div>
-    </div>
-   
   );
-};
-
+          };
 export default Recognize;
