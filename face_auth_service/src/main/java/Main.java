@@ -31,7 +31,6 @@ public class Main {
         HttpClient httpClient = HttpClients.createDefault();
 
         String apiUrl = System.getenv("API_URL");
-        String jwtToken = "";  // to look at this, need to find a way to remove tihs.
         Map<String, Double> userConfidenceSum = new HashMap<>();
 
         System.out.println("Started listening");
@@ -40,10 +39,10 @@ public class Main {
             for (ConsumerRecord<String, byte[]> record : records) {
                 byte[] serializedImageList = record.value();
                 String userId = record.key();
+                String jwtToken = JWTHandler.getTempJWTToken(Integer.parseInt(userId));
                 ObjectMapper mapper = new ObjectMapper();
                 try {
                     JsonNode userDataNode = mapper.readTree(serializedImageList);
-//                    String username = String.valueOf(userDataNode.get("username"));
                     List<String> imageList = mapper.convertValue(userDataNode.get("images"), new TypeReference<List<String>>() {
                     });
 
@@ -82,10 +81,11 @@ public class Main {
                         if (i == 5) {
                             double averageConfidence = userConfidenceSum.get(userId) / 6;
                             if (averageConfidence > 70.0) {
-                                _kafkaResponseProducer.sendMessage("face_auth_response", "3", "1".getBytes(StandardCharsets.UTF_8));
+                                _kafkaResponseProducer.sendMessage("face_auth_response", userId, "1".getBytes(StandardCharsets.UTF_8));
                                 System.out.println("Added to new hashmap for user " + userId + " : " + averageConfidence);
                             }
                             i = 0;
+                            userConfidenceSum.put(userId, 0.0);
                         }
                     }
 

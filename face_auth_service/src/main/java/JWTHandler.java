@@ -1,26 +1,47 @@
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.Base64;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class JWTHandler {
-    public static String getUserIdFromJWT(String token){
+
+
+    public static String getTempJWTToken(int user_id) {
+        String baseUrl = "http://127.0.0.1:8001/login/temp_jwt/";
+        String jwtToken = null;
+
         try {
-            Base64.Decoder decoder = Base64.getUrlDecoder();
-            String[] splitToken = token.split("\\.");
-            String header = new String(decoder.decode(splitToken[0]));
-            String payload = new String(decoder.decode(splitToken[1]));
+            URL url = new URL(baseUrl + user_id);
 
-            ObjectMapper objectMapper = new ObjectMapper();
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
-            JsonNode jsonNode = objectMapper.readTree(payload);
+            connection.setRequestMethod("GET");
 
-            String userId = String.valueOf(jsonNode.get("user_id"));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            StringBuilder response = new StringBuilder();
+            String line;
 
-            return userId;
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+
+            reader.close();
+
+            jwtToken = response.toString();
+//            remove "" from token
+
+            jwtToken = jwtToken.substring(1, jwtToken.length() - 1);
+
+            connection.disconnect();
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Handle exceptions, log, or return a default token in case of failure
         }
-    };
+
+        return jwtToken;
+    }
+
+
 }
