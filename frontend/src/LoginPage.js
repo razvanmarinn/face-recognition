@@ -94,7 +94,7 @@ const LoginPage = () => {
               if (jsonResponse.status === "success") { 
                   setLog();
                   localStorage.setItem('token_payload', jsonResponse.access_token); 
-                  navigate('/home');
+                  navigate('/');
               }
           } else {
               console.error('Error sending data:', response);
@@ -124,7 +124,7 @@ const LoginPage = () => {
         if (response.status === 200) {
           setLog();
           localStorage.setItem('token_payload', response.data.access_token);
-          navigate('/home');
+          navigate('/');
         } else {
 
         }
@@ -189,6 +189,7 @@ const LoginPage = () => {
   <h2>Enter your name</h2>
   <input
     type="text"
+    id = "enter_name"
     value={name}
     onChange={(e) => setName(e.target.value)}
     style={{ margin: '0 auto' }}

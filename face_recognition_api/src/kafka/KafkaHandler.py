@@ -29,61 +29,54 @@ class KafkaHandler():
 
     async def send_images_to_kafka(self, images, user_id):
         try:
-            await self.producer.start()
+            async with self.producer:
+                image_list = []
+                for image in images:
+                    image_bytes = image.file.read()
 
-            image_list = []
-            for image in images:
-                image_bytes = image.file.read()
+                    # Encode image as base64
+                    base64_image = base64.b64encode(image_bytes).decode('utf-8')
+                    image_list.append(base64_image)
 
-                # Encode image as base64
-                base64_image = base64.b64encode(image_bytes).decode('utf-8')
-                image_list.append(base64_image)
+                user_data = {
+                    "user_id": user_id,
+                    "images": image_list
+                }
 
-            user_data = {
-                "user_id": user_id,
-                "images": image_list
-            }
+                serialized_data = json.dumps(user_data)
 
-            serialized_data = json.dumps(user_data)
-
-            await self.producer.send_and_wait(
-                self.sending_topic,
-                key=str(user_id),
-                value=serialized_data.encode('utf-8')
-            )
-
-            return True
+                await self.producer.send_and_wait(
+                    self.sending_topic,
+                    key=str(user_id),
+                    value=serialized_data.encode('utf-8')
+                )
+                print("Message sent to Kafka.")
+                await asyncio.sleep(1)
+                return True
         except Exception as e:
             print(f'Error sending images to Kafka: {str(e)}')
             return False
-        finally:
-            await self.producer.stop()
 
     async def listen_for_response(self):
         try:
-            consumer = AIOKafkaConsumer(
-                self.receiving_topic,
-                bootstrap_servers='localhost:9092',
-                enable_auto_commit=False
-            )
-            await consumer.start()
+            async with AIOKafkaConsumer(
+                    self.receiving_topic,
+                    bootstrap_servers='localhost:9092',
+                    enable_auto_commit=False
+            ) as consumer:
+                async for message in consumer:
+                    print(f"Key: {message.key}")
+                    print(f"Value: {message.value}")
+                    print(f"Timestamp: {message.timestamp}")
 
-            async for message in consumer:
-                print(f"Key: {message.key}")
-                print(f"Value: {message.value}")
-                print(f"Timestamp: {message.timestamp}")
-
-                if message.value == b'1':
-                    self.recognized.set()
-                    print("Face recognized")
-                    break
-
+                    if message.value == b'1':
+                        self.recognized.set()
+                        print("Face recognized")
+                        break
         except KeyboardInterrupt:
             print("Consumer stopped manually")
         except Exception as e:
             print(f"An error occurred: {e}")
-        finally:
-            await consumer.stop()
 
     async def start_listener_thread(self):
         listener_task = asyncio.create_task(self.listen_for_response())

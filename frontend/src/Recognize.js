@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './css/Recognize.css';
+import Navbar from './Navbar';
 
 const Recognize = () => {
   const [stream, setStream] = useState(null);
@@ -95,7 +96,9 @@ const Recognize = () => {
   };
 
   return (
-    <div className="main-container">
+    <div>
+      <Navbar />
+      <div className="main-container">
       <h2>Recognition flow!</h2>
       <div className="input-section">
         <input
@@ -113,6 +116,8 @@ const Recognize = () => {
         )}
       </div>
     </div>
+    </div>
+   
   );
 };
 

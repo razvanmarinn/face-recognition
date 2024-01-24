@@ -4,6 +4,8 @@ import { AuthContext, AuthProvider } from './AuthContext';
 import LoginPage from './LoginPage';
 import MainPage from './MainPage';
 import Recognize from './Recognize';
+import AddFace from './AddFace';
+import SharedImagePool from './SharedImagePool.js';
 
 function App() {
   const { isLoggedIn } = useContext(AuthContext);
@@ -13,8 +15,10 @@ function App() {
       <div className="App">
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/home" element={isLoggedIn ? <MainPage /> : <Navigate to="/login" />} />
+          <Route path="/" element={isLoggedIn ? <MainPage /> : <Navigate to="/login" />} />
           <Route path="/recognize" element={isLoggedIn ? <Recognize /> : <Navigate to="/login" />} />
+          <Route path="/addface" element={isLoggedIn ? <AddFace /> : <Navigate to="/login" />} />
+          <Route path="/shared_image_pool" element={isLoggedIn ? <SharedImagePool /> : <Navigate to="/login" />} />
         </Routes>
       </div>
     </Router>

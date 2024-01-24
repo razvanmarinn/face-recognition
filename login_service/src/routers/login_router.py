@@ -44,6 +44,13 @@ async def login(user_data: UserLogin, db: Session = Depends(get_db)):
     return {"access_token": access_token, "token_type": "bearer"}
 
 
+@login_router.get("/temp_jwt/{user_id}")
+async def temp_jwt(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(UserModel).filter(UserModel.id == user_id).first()
+    access_token = JWTBearer.signJWT(user_id, user.username)
+    return access_token
+
+
 def authenticate_user(username: str, password: str, db):
     login_user = db.query(UserModel).filter(UserModel.username == username).first()
     if not login_user:
