@@ -84,9 +84,9 @@ public class Main {
                                 _kafkaResponseProducer.sendMessage("face_auth_response", userId, "1".getBytes(StandardCharsets.UTF_8));
                                 System.out.println("Added to new hashmap for user " + userId + " : " + averageConfidence);
                             }
-                            i = 0;
                             userConfidenceSum.put(userId, 0.0);
                         }
+                        _kafkaImageConsumer._consumer.commitSync();
                     }
 
                 } catch (Exception e) {
