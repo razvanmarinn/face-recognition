@@ -132,6 +132,7 @@ const SharedImagePool = () => {
         <div>
             <Navbar />
             <div className="shared-image-pool">
+                <div className="container">
                 <h1>Shared Image Pool</h1>
                 <button onClick={handleOpenCreateGroupModal}>Create Group</button>
                 {showCreateGroupModal && (
@@ -175,6 +176,7 @@ const SharedImagePool = () => {
                     </div>
                 )}
             </div>
+        </div>
         </div>
     );
 }

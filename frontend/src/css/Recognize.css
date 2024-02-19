@@ -1,16 +1,28 @@
-/* Styling while keeping the background color */
+
 .main-container {
   position: relative;
   background-color: #3c5a60;
   min-height: 100vh;
   display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 10vh 20px;
+}
+
+.inner-container {
+  background-color: #1a3c40;
+  color: white;
+  font-family: Arial, sans-serif;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-family: Arial, sans-serif;
   padding: 20px;
+  max-width: 600px; 
+  width: 100%;
+  height: 100%; 
 }
+
 
 .header-text {
   font-size: 24px;
@@ -52,7 +64,7 @@
   margin-top: 20px;
   background-color: #1a3c40;
   color: white;
-  border: none;
+  border: 2px solid white;
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.3s ease;
@@ -69,7 +81,7 @@
   border-radius: 50%;
   width: 120px;
   height: 120px;
-  animation: spin 4s linear infinite; /* Increased duration to 4s */
+  animation: spin 4s linear infinite; 
 }
 
 @keyframes spin {

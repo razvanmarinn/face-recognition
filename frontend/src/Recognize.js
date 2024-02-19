@@ -105,27 +105,30 @@ const Recognize = () => {
     <div>
       <Navbar />
       <div className="main-container">
-        <h2 className="header-text">Recognition Flow!</h2>
-        <div className="input-section">
-          <input
-            type="text"
-            value={text}
-            onChange={handleTextChange}
-            placeholder="Enter text..."
-            className="text-input"
-          />
-          {!loading && stream && (
-            <div className="video-section">
-              <video ref={videoRef} autoPlay playsInline className="video-element" />
-              <button onClick={takePicture} className="picture-button">
-                Take Picture
-              </button>
-            </div>
-          )}
+        <div className="inner-container">
+          <h2 className="header-text">Recognition Flow!</h2>
+          <div className="input-section">
+            <input
+              type="text"
+              value={text}
+              onChange={handleTextChange}
+              placeholder="Enter text..."
+              className="text-input"
+            />
+            {!loading && stream && (
+              <div className="video-section">
+                <video ref={videoRef} autoPlay playsInline className="video-element" />
+                <button onClick={takePicture} className="picture-button">
+                  Take Picture
+                </button>
+              </div>
+            )}
+          </div>
+          {loading && <div className="loading-spinner"></div>}
         </div>
-        {loading && <div className="loading-spinner"></div>}
       </div>
     </div>
   );
-          };
-export default Recognize;
+  };
+  
+  export default Recognize;

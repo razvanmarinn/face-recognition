@@ -1,9 +1,13 @@
 .menu {
+    position: relative;
     list-style-type: none;
     margin: 0;
     padding: 0;
     overflow: hidden;
     background-color: #1a3c40;
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
 }
 
 .menu li {
@@ -21,4 +25,73 @@
 
 .menu li a:hover {
     background-color: #111;
+}
+
+.logo {
+    height: 75px;
+    width: 75px;
+    padding-bottom: 10px;
+    flex-shrink: 0; 
+}
+
+.navbar-content {
+    display: flex;
+    align-items: center;
+    flex-grow:1;
+}
+
+.icon-right {
+    padding: 10px;
+}
+
+
+.right-container {
+    position: absolute;
+    right: 0;
+    display: flex;
+    align-items: center;
+}
+
+.Search-form {
+    text-align: center;
+    right: 60px; 
+    top: 10px; 
+    margin-left: auto; 
+}
+
+.Search-inner {
+    position: relative;
+}
+
+input[type="search"] {
+    -webkit-appearance: searchfield;
+    font-family: 'Arvo', serif;
+    width: 0px;
+    height: 20px; 
+    padding: 15px 15px; 
+    background: transparent;
+
+    color: white;
+    font-size: 14px; 
+    border: 2px solid currentColor; 
+    transition: all 0.5s ease-in-out;
+}
+
+input[type="search"]:focus,
+input[type="search"]:active {
+    width: 200px;
+    outline: none;
+}
+
+input[type="search"]::-webkit-input-placeholder {
+    color: currentColor;
+}
+
+.Label {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 99;
 }

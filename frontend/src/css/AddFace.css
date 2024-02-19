@@ -1,14 +1,25 @@
-.add-face {
+body {
+    margin: 0; 
     background-color: #3c5a60;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+
+}
+
+.add-face {
     color: white;
     font-family: Arial, sans-serif;
-    padding: 40px;
-    text-align: center;
+    padding: 10vh 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: auto; 
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 600px;
+    width: 100%;
 }
 
 .add-face h2 {
