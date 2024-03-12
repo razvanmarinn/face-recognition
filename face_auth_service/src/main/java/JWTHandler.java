@@ -30,14 +30,12 @@ public class JWTHandler {
             reader.close();
 
             jwtToken = response.toString();
-//            remove "" from token
 
             jwtToken = jwtToken.substring(1, jwtToken.length() - 1);
 
             connection.disconnect();
         } catch (IOException e) {
             e.printStackTrace();
-            // Handle exceptions, log, or return a default token in case of failure
         }
 
         return jwtToken;

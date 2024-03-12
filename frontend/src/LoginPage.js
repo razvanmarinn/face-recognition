@@ -48,7 +48,7 @@ const LoginPage = () => {
   const faceLogin = async () => {
     if (videoRef.current) {
         const video = videoRef.current;
-        const captureInterval = 1000;
+        const captureInterval = 250;
         let imagesToSend = [];
 
         for (let i = 0; i < 7; i++) {
@@ -92,8 +92,15 @@ const LoginPage = () => {
               const jsonResponse = await wait_for_response.json(); 
               console.log(jsonResponse);
               if (jsonResponse.status === "success") { 
+                const jwtTokenResponse = await fetch(`http://127.0.0.1:8001/login/temp_jwt/${userID}`, {
+                  method: 'GET'
+              });
+          
+                  const jwtTokenText = await jwtTokenResponse.text();
+                  const trimmedJwtToken = jwtTokenText.slice(1, -1); 
+          
                   setLog();
-                  localStorage.setItem('token_payload', jsonResponse.access_token); 
+                  localStorage.setItem('token_payload', trimmedJwtToken); 
                   navigate('/');
               }
           } else {
