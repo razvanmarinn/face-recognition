@@ -38,10 +38,9 @@ async def login(user_data: UserLogin, db: Session = Depends(get_db)):
     if isinstance(user, str):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
-    print(user)
     access_token = JWTBearer.signJWT(user.id, user.username)
 
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"access_token": access_token, "token_type": "bearer", "user_id": user.id}
 
 
 @login_router.get("/temp_jwt/{user_id}")

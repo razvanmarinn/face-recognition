@@ -34,6 +34,16 @@ const LoginPage = () => {
     handleCloseModal();
   };
 
+  const getUserId = async (name) => {
+      try {
+        const response = await fetch(`http://127.0.0.1:8001/user_details/get_user_id?username=${name}`);
+        const userId = await response.text();
+        return userId;
+      } catch (error) {
+        console.error('Error getting userId:', error);
+      }
+  };
+
   const startCamera = async () => {
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -69,12 +79,13 @@ const LoginPage = () => {
             }, 'image/jpeg'); 
         }
 
-        const userID = 3;
-        const username = 'x'; 
+        const userID = await getUserId(name);
+        console.log("Name: ", name);
+        console.log("User ID: ", userID);
 
         const formData = new FormData();
         formData.append('user_id', userID);
-        formData.append('username', username);
+        formData.append('username', name);
         imagesToSend.forEach((imageBlob) => {
             formData.append('list_of_images', imageBlob, 'image.jpg'); 
         });
@@ -131,6 +142,7 @@ const LoginPage = () => {
         if (response.status === 200) {
           setLog();
           localStorage.setItem('token_payload', response.data.access_token);
+          localStorage.setItem('userId', response.data.user_id);
           navigate('/');
         } else {
 
