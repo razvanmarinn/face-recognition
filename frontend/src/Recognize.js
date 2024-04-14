@@ -6,6 +6,7 @@ const Recognize = () => {
   const [stream, setStream] = useState(null);
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emotionCheck, setEmotionCheck] = useState(false);
   const videoRef = useRef();
 
   const startCamera = useCallback(async () => {
@@ -21,7 +22,7 @@ const Recognize = () => {
       console.error('Error accessing the camera:', error);
     }
     setLoading(false);
-  }, []); // Removed 'stream' from the dependency array
+  }, []); 
   
   useEffect(() => {
     startCamera();
@@ -34,12 +35,12 @@ const Recognize = () => {
       const video = videoRef.current;
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
-
+  
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-
+  
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
+  
       canvas.toBlob(async (blob) => {
         if (blob) {
           const reader = new FileReader();
@@ -50,18 +51,18 @@ const Recognize = () => {
             const formData = new FormData();
             formData.append('image', new Blob([imageBytes]));
             formData.append('face_name', textData);
-
+  
             const headers = {
               Authorization: `Bearer ${localStorage.getItem('token_payload')}`,
             };
-
+  
             try {
               const response = await fetch('http://127.0.0.1:8000/face_recognition/recognize', {
                 method: 'POST',
                 headers: headers,
                 body: formData
               });
-
+  
               if (response.ok) {
                 const jsonResponse = await response.json();
                 console.log('JSON Response:', jsonResponse); 
@@ -71,6 +72,22 @@ const Recognize = () => {
             
                   if (!isNaN(confidence) && confidence >= 70) {
                     alert('Recognition Successful');
+                    if (emotionCheck) { // Only call the emotion recognition API if the checkbox is checked
+                      const emotionFormData = new FormData();
+                      emotionFormData.append('file', new Blob([imageBytes]));
+                      const emotionResponse = await fetch('http://127.0.0.1:8000/face_emotion_recognition/predict-emotion/', {
+                        method: 'POST',
+                        headers: headers,
+                        body: emotionFormData
+                      });
+                      if (emotionResponse.ok) {
+                        const emotionJsonResponse = await emotionResponse.json();
+                        console.log('Emotion JSON Response:', emotionJsonResponse);
+                        alert(`Predicted Emotion: ${emotionJsonResponse.predicted_emotion}`);
+                      } else {
+                        throw new Error('Emotion prediction request failed!');
+                      }
+                    }
                   } else {
                     alert('Recognition Confidence Below 70');
                   }
@@ -78,19 +95,19 @@ const Recognize = () => {
                   alert('Incomplete or Unexpected JSON Structure');
                 }
               } 
-
+  
               else {
                 throw new Error('Request failed!');
               }
             } catch (error) {
               console.error('Error sending data:', error);
             }
-
+  
             setLoading(false);
             if (stream) {
               stream.getTracks().forEach(track => track.stop());
             }
-            startCamera(); // Restart the camera here
+            startCamera(); 
           };
         }
       }, 'image/png');
@@ -99,6 +116,11 @@ const Recognize = () => {
 
   const handleTextChange = (event) => {
     setText(event.target.value);
+  };
+
+
+  const handleEmotionCheckChange = (event) => { 
+    setEmotionCheck(event.target.checked);
   };
 
   return (
@@ -115,6 +137,13 @@ const Recognize = () => {
               placeholder="Enter text..."
               className="text-input"
             />
+            <input
+              type="checkbox"
+              checked={emotionCheck}
+              onChange={handleEmotionCheckChange}
+              className="emotion-check-input"
+            />
+            <label htmlFor="emotion-check-input">Check for Emotion Recognition</label>
             {!loading && stream && (
               <div className="video-section">
                 <video ref={videoRef} autoPlay playsInline className="video-element" />

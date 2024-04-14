@@ -1,9 +1,9 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, APIRouter
 from keras.models import load_model
 import cv2
 import numpy as np
 
-model = load_model('best_emotion_model.h5')
+model = load_model(r'D:\Razvan\proj\licenta\face_recognition_api\src\routers\best_emotion_model.h5')
 
 emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
 
@@ -17,8 +17,8 @@ def preprocess_image(image):
 
 
 @face_emotion_router.post("/predict-emotion/")
-async def predict_emotion(file: UploadFile = File(...)):
-    contents = await file.read()
+async def predict_emotion(image: UploadFile = File(...)):
+    contents = await image.read()
     nparr = np.frombuffer(contents, np.uint8)
     image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
