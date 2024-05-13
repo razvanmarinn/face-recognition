@@ -6,7 +6,8 @@ import MainPage from './MainPage';
 import Recognize from './Recognize';
 import AddFace from './AddFace';
 import SharedImagePool from './SharedImagePool.js';
-import Profile from './Profile.js'
+import Profile from './Profile.js';
+import BrowseFaces from './BrowseFaces.js';
 
 function App() {
   const { isLoggedIn } = useContext(AuthContext);
@@ -21,6 +22,8 @@ function App() {
           <Route path="/addface" element={isLoggedIn ? <AddFace /> : <Navigate to="/login" />} />
           <Route path="/shared_image_pool" element={isLoggedIn ? <SharedImagePool /> : <Navigate to="/login" />} />
           <Route path="/profile" element={isLoggedIn ? <Profile /> : <Navigate to="/login" />} />
+          <Route path="/browse_faces" element={isLoggedIn ? <BrowseFaces /> : <Navigate to="/login" />} />
+
         </Routes>
       </div>
     </Router>

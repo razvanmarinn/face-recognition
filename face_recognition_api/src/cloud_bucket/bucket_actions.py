@@ -4,7 +4,7 @@ import src.api_config as cfg
 import tempfile
 import os
 import cv2
-
+import datetime
 
 class BucketActions:
     @staticmethod
@@ -71,3 +71,23 @@ class BucketActions:
             destination_blob.upload_from_filename(temp_filename)
 
             os.remove(temp_filename)
+
+    @staticmethod
+    def retrieve_all_image_urls(face_name: str, user_id: str):
+        project_id, target_credentials = auth_to_gcp()
+        client = storage.Client(credentials=target_credentials, project=project_id)
+        bucket = client.get_bucket(cfg.BUCKET_NAME)
+
+        prefix = f'faces/{face_name}/{user_id}/'
+
+
+        blobs = bucket.list_blobs(prefix=prefix)
+
+        image_urls = []
+        for blob in blobs:
+            signed_url = blob.generate_signed_url(expiration=datetime.timedelta(minutes=60))
+            image_urls.append(signed_url)
+
+        return image_urls
+
+

@@ -114,6 +114,30 @@ async def add_face_to_group(group_name: str = Form(...), face_name: str = Form(.
     return {"message": "success"}
 
 
+@shared_image_pool_router.post("/add_face_to_group2")
+async def add_face_to_group2(group_name: str = Form(...), name: str = Form("Default"), image: UploadFile = File(...),
+                            token_payload: dict = Depends(decode_jwt_token),
+                            db: Session = Depends(get_db)):
+    def check_for_user_permissions(input_perms: SharedImagePoolPermissions):
+        if input_perms.write:
+            return True
+        return False
+
+    user_permissions = await get_permissions(db, group_name, token_payload)
+    if not check_for_user_permissions(user_permissions):
+        return {"message": "You don't have permissions to add faces to this group only to view"}
+
+    group_id = db.query(SharedImagePoolModel).filter(SharedImagePoolModel.image_pool_name == group_name).first().id
+    image_content = await image.read()
+    file_size = len(image_content)
+    image = Image(name=name, size=file_size, user_id=token_payload['user_id'])
+    image.path = f"shared_pool_images/{group_id}/{name}/{image.name}.jpg"
+    print(image.path)
+    add_face(image.path, image_content)
+    upload_path_to_db(db=db, item=image)
+    return {"message": "success"}
+
+
 async def get_permissions(db, group_name, token_payload):
     permissions_query = db.query(SharedImagePoolPermissionsModel).filter(
         SharedImagePoolPermissionsModel.user_id == token_payload['user_id']).filter(

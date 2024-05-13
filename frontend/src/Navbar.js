@@ -13,6 +13,7 @@ const Navbar = () => {
                     <li><Link to="/recognize">Recognize</Link></li>
                     <li><Link to="/addface">Add Face</Link></li>
                     <li><Link to="/shared_image_pool">Shared Image Pool</Link></li>
+                    <li><Link to="/browse_faces">Browse Faces</Link></li>
                 </ul>
                 <div class="right-container">
                 <form action="submit" className="Search-form">

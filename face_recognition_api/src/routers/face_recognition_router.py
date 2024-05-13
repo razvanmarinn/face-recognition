@@ -10,6 +10,8 @@ from src.routers.share_pool import get_all_sip_for_user
 from time import time
 from src.kafka.KafkaHandler import KafkaHandler
 from typing import List, Optional
+from src.cloud_bucket.bucket_actions import BucketActions
+
 
 recognition_router = APIRouter(prefix='/face_recognition', tags=['face_recognition'])
 face_recognition = FaceRecognition()
@@ -62,17 +64,17 @@ async def recognize(
             face_recognition.encode_faces(user, face_name)
 
         result = face_recognition.recognize(image_content)
-        # status = result[0]['details']['name'] == face_name or result[0]['details']['name'] == 'unknown'
-        #
-        # register_in_history(
-        #     db, item=RecognitionHistory(
-        #         path=image.path,
-        #         user_id=user.id,
-        #         face_name=face_name,
-        #         timestamp=timestamp,
-        #         success_status=status
-        #     )
-        # )
+        status = result[0]['details']['name'] == face_name or result[0]['details']['name'] == 'unknown'
+
+        register_in_history(
+            db, item=RecognitionHistory(
+                path=image.path,
+                user_id=user.id,
+                face_name=face_name,
+                timestamp=timestamp,
+                success_status=status
+            )
+        )
 
         return result
 
@@ -107,3 +109,11 @@ async def check_recognition_status(user_id: int):
             return {"message": "Recognition in progress or failed", "status": "in_progress_or_failed"}
     except Exception as e:
         return {"message": str(e), "status": "failed"}
+
+
+@recognition_router.get("/get_faces/{face_name}")
+async def get_faces(face_name: str, token_payload: dict = Depends(decode_jwt_token), db: Session = Depends(get_db)):
+    user_id = token_payload['user_id']
+    link_of_images = BucketActions.retrieve_all_image_urls(user_id, face_name)
+    return link_of_images
+

@@ -25,7 +25,7 @@ const AddFace = () => {
             if (isChecked) {
                 // TODO: To look at the code for adding face to shared image pool
                 formData.append('group_name', sharedImagePool);
-                response = await fetch('http://127.0.0.1:8000/shared_image_pool/add_face_to_group', {
+                response = await fetch('http://127.0.0.1:8000/shared_image_pool/add_face_to_group2', {
                     method: 'POST',
                     headers: headers,
                     body: formData,

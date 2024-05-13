@@ -74,7 +74,7 @@ const Recognize = () => {
                     alert('Recognition Successful');
                     if (emotionCheck) { // Only call the emotion recognition API if the checkbox is checked
                       const emotionFormData = new FormData();
-                      emotionFormData.append('file', new Blob([imageBytes]));
+                      emotionFormData.append('image', new Blob([imageBytes]));
                       const emotionResponse = await fetch('http://127.0.0.1:8000/face_emotion_recognition/predict-emotion/', {
                         method: 'POST',
                         headers: headers,
