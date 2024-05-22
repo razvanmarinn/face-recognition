@@ -53,19 +53,17 @@ class FaceRecognition:
             for face_loc, face_name in zip(face_locations, face_details)
         ]
 
-    def encode_faces(self, user: User, face_name: str, pool_mode: bool = False, pool_list: List[int] = None):
+    def encode_faces(self, user: User, face_name: str = None, pool_mode: bool = False, pool_list: List[int] = None,
+                     identify: bool = False):
         self.known_face_encodings = []
         self.known_face_names = []
-        temp_image_filenames, temp_image_folder = BucketActions.get_images_from_folder(user_id=user.id,
-                                                                                       face_name=face_name)
-        if pool_mode:
-            for pool_id in pool_list:
-                temp_pool_image_filenames, temp_pool_image_folder = BucketActions.get_images_from_folder(
-                    pool_id=pool_id,
-                    face_name=face_name,
-                    pool_mode=True,
-                    path=temp_image_folder)
-                temp_image_filenames.extend(temp_pool_image_filenames)
+        if identify:
+            temp_image_filenames, temp_image_folder = BucketActions.get_images_for_identification(user_id=user.id)
+        else:
+            temp_image_filenames, temp_image_folder = BucketActions.get_images_from_folder(user_id=user.id,
+                                                                                           face_name=face_name)
+
+        print(temp_image_filenames, temp_image_folder)
 
         for image_filename in temp_image_filenames:
             image_path = os.path.join(temp_image_folder, image_filename)
@@ -74,6 +72,8 @@ class FaceRecognition:
             face_encodings = face_recognition.face_encodings(face_image)
 
             if len(face_encodings) > 0:
+                if identify:
+                    face_name = os.path.basename(os.path.dirname(image_filename))
                 face_encoding = face_encodings[0]
                 self.known_face_encodings.append(face_encoding)
                 self.known_face_names.append(face_name)

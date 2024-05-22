@@ -78,14 +78,24 @@ public class Main {
                         userConfidenceSum.put(userId, currentSum + confidenceLevel);
                         System.out.println("Updated confidence sum for user " + userId + ": " + userConfidenceSum.get(userId));
 
-                        if (i == 5) {
-                            double averageConfidence = userConfidenceSum.get(userId) / 6;
-                            if (averageConfidence > 70.0) {
-                                _kafkaResponseProducer.sendMessage("face_auth_response", userId, "1".getBytes(StandardCharsets.UTF_8));
-                                System.out.println("Added to new hashmap for user " + userId + " : " + averageConfidence);
-                            }
-                            userConfidenceSum.put(userId, 0.0);
+
+                        double averageConfidence = userConfidenceSum.get(userId);
+                        if (averageConfidence > 70.0) {
+//                            sleep for 15 secs
+                            Thread.sleep(4000);
+
+                            _kafkaResponseProducer.sendMessage("face_auth_response", userId, "1".getBytes(StandardCharsets.UTF_8));
+                            System.out.println("Added to new hashmap for user " + userId + " : " + averageConfidence);
                         }
+                        userConfidenceSum.put(userId, 0.0);
+//                        if (i == 5) {
+//                            double averageConfidence = userConfidenceSum.get(userId) / 6;
+//                            if (averageConfidence > 70.0) {
+//                                _kafkaResponseProducer.sendMessage("face_auth_response", userId, "1".getBytes(StandardCharsets.UTF_8));
+//                                System.out.println("Added to new hashmap for user " + userId + " : " + averageConfidence);
+//                            }
+//                            userConfidenceSum.put(userId, 0.0);
+//                        }
                         _kafkaImageConsumer._consumer.commitSync();
                     }
 

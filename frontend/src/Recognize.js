@@ -50,14 +50,13 @@ const Recognize = () => {
             const textData = text;
             const formData = new FormData();
             formData.append('image', new Blob([imageBytes]));
-            formData.append('face_name', textData);
   
             const headers = {
               Authorization: `Bearer ${localStorage.getItem('token_payload')}`,
             };
   
             try {
-              const response = await fetch('http://127.0.0.1:8000/face_recognition/recognize', {
+              const response = await fetch('http://127.0.0.1:8000/face_recognition/identify', {
                 method: 'POST',
                 headers: headers,
                 body: formData
@@ -69,9 +68,10 @@ const Recognize = () => {
                 if (jsonResponse && jsonResponse.length > 0 && jsonResponse[0].details && jsonResponse[0].details.confidence_level) {
                   const confidenceStr = jsonResponse[0].details.confidence_level;
                   const confidence = parseFloat(confidenceStr.replace('%', ''));
+                  const name = jsonResponse[0].details.name;
             
                   if (!isNaN(confidence) && confidence >= 70) {
-                    alert('Recognition Successful');
+                    alert('The person in the image is ' + name + ' with a confidence of ' + confidence + '%');
                     if (emotionCheck) { // Only call the emotion recognition API if the checkbox is checked
                       const emotionFormData = new FormData();
                       emotionFormData.append('image', new Blob([imageBytes]));
@@ -130,13 +130,7 @@ const Recognize = () => {
         <div className="inner-container">
           <h2 className="header-text">Recognition Flow!</h2>
           <div className="input-section">
-            <input
-              type="text"
-              value={text}
-              onChange={handleTextChange}
-              placeholder="Enter text..."
-              className="text-input"
-            />
+           
             <input
               type="checkbox"
               checked={emotionCheck}

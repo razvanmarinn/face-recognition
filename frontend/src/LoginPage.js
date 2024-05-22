@@ -61,7 +61,7 @@ const LoginPage = () => {
         const captureInterval = 250;
         let imagesToSend = [];
 
-        for (let i = 0; i < 7; i++) {
+        for (let i = 0; i < 1; i++) {
             await new Promise(resolve => setTimeout(resolve, captureInterval));
 
             const canvas = document.createElement('canvas');
@@ -95,6 +95,8 @@ const LoginPage = () => {
                 method: 'POST',
                 body: formData,
             });
+
+            console.log("Response: ", response)
 
             if (response.ok) {
               const wait_for_response = await fetch(`http://127.0.0.1:8000/face_recognition/check_recognition_status/${userID}`, {

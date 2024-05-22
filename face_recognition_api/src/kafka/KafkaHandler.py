@@ -86,7 +86,7 @@ class KafkaHandler():
         try:
             await self.start_listener_thread()
 
-            await asyncio.wait_for(self.recognized.wait(), timeout=200)
+            await asyncio.wait_for(self.recognized.wait(), timeout=60)
 
             return self.recognized.is_set()
 
