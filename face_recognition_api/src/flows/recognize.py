@@ -59,11 +59,17 @@ class FaceRecognition:
         self.known_face_names = []
         if identify:
             temp_image_filenames, temp_image_folder = BucketActions.get_images_for_identification(user_id=user.id)
+        elif pool_mode:
+            for pool_id in pool_list:
+                temp_pool_image_filenames, temp_pool_image_folder = BucketActions.get_images_from_folder(
+                    pool_id=pool_id,
+                    face_name=face_name,
+                    pool_mode=True,
+                    path=temp_image_folder)
+                temp_image_filenames.extend(temp_pool_image_filenames)
         else:
             temp_image_filenames, temp_image_folder = BucketActions.get_images_from_folder(user_id=user.id,
                                                                                            face_name=face_name)
-
-        print(temp_image_filenames, temp_image_folder)
 
         for image_filename in temp_image_filenames:
             image_path = os.path.join(temp_image_folder, image_filename)
