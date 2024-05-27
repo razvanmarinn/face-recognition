@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from src.routers.face_recognition_router import recognition_router as face_recognition_router
-from src.routers.dashboard_router import recognition_router as dashboard_router
+from src.routers.dashboard_router import dashboard_router
 from src.routers.face_emotion_router import face_emotion_router
 from src.routers.share_pool import shared_image_pool_router
 from src.database.models import models, schema

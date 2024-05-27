@@ -17,7 +17,7 @@ class BucketActions:
             bucket = client.get_bucket(cfg.BUCKET_NAME)
             prefix = (
                 f'faces/{user_id}/{face_name}/' if (not pool_mode and not face_auth) else
-                (f'shared_pool_images/{pool_id}/{face_name}/' if pool_mode else
+                (f'shared_pool_images/{pool_id}/' if pool_mode else
                  f'faces/{user_id}/face_auth')  # to be looked at, it is bugged
             )
 

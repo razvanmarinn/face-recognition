@@ -57,33 +57,47 @@ class FaceRecognition:
                      identify: bool = False):
         self.known_face_encodings = []
         self.known_face_names = []
-        if identify:
+        temp_image_filenames = []
+        temp_image_folder = None
+
+        if identify and not pool_mode:
             temp_image_filenames, temp_image_folder = BucketActions.get_images_for_identification(user_id=user.id)
-        elif pool_mode:
+            temp_image_filenames = [(filename, None) for filename in
+                                    temp_image_filenames]  # Ensure consistent structure
+
+        if pool_mode:
             for pool_id in pool_list:
-                temp_pool_image_filenames, temp_pool_image_folder = BucketActions.get_images_from_folder(
+                pool_image_filenames, pool_image_folder = BucketActions.get_images_from_folder(
                     pool_id=pool_id,
                     face_name=face_name,
-                    pool_mode=True,
-                    path=temp_image_folder)
-                temp_image_filenames.extend(temp_pool_image_filenames)
-        else:
+                    pool_mode=True
+                )
+                temp_image_filenames.extend([(filename, pool_id) for filename in pool_image_filenames])
+                if temp_image_folder is None:
+                    temp_image_folder = pool_image_folder
+
+        if not identify and not pool_mode:
             temp_image_filenames, temp_image_folder = BucketActions.get_images_from_folder(user_id=user.id,
                                                                                            face_name=face_name)
+            temp_image_filenames = [(filename, None) for filename in
+                                    temp_image_filenames]  # Ensure consistent structure
 
-        for image_filename in temp_image_filenames:
+        for image_filename, pool_id in temp_image_filenames:
             image_path = os.path.join(temp_image_folder, image_filename)
 
             face_image = face_recognition.load_image_file(image_path)
             face_encodings = face_recognition.face_encodings(face_image)
 
             if len(face_encodings) > 0:
-                if identify:
-                    face_name = os.path.basename(os.path.dirname(image_filename))
+                current_face_name = face_name  # Use a separate variable to avoid modifying the original face_name
+                if identify and not pool_mode:
+                    current_face_name = os.path.basename(os.path.dirname(image_filename))
+                if pool_id is not None:
+                    current_face_name = f"{current_face_name}_pool{pool_id}"
                 face_encoding = face_encodings[0]
                 self.known_face_encodings.append(face_encoding)
-                self.known_face_names.append(face_name)
-                print(f"Face encoding added for {face_name} from {image_filename}")
+                self.known_face_names.append(current_face_name)
+                print(f"Face encoding added for {current_face_name} from {image_filename}")
             else:
                 print(f"No face found in {image_filename}")
 
@@ -112,7 +126,6 @@ class FaceRecognition:
         delete_temp_files(temp_image_folder)
 
     def recognize(self, image_bytes: bytes):
-
         face_image = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
 
         face_locations = face_recognition.face_locations(face_image)
@@ -122,15 +135,23 @@ class FaceRecognition:
         for face_encoding in face_encodings:
             matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding)
             if not self.known_face_encodings:
-                face_details.append({'name': 'unknown', 'confidence_level': ''})
+                face_details.append({'name': 'unknown', 'confidence_level': '', 'pool_id': None})
             else:
                 face_distances = face_recognition.face_distance(self.known_face_encodings, face_encoding)
                 if face_distances.size > 0:
                     best_match_index = np.argmin(face_distances)
-                    name = self.known_face_names[best_match_index] if matches[best_match_index] else "Unknown"
+                    name_with_pool = self.known_face_names[best_match_index] if matches[best_match_index] else "Unknown"
                     confidence = FaceConfidence(face_distances[best_match_index]).calculate_confidence()
-                    face_details.append({'name': name, 'confidence_level': confidence})
+
+                    # Extract pool ID if available
+                    if name_with_pool != "Unknown" and '_pool' in name_with_pool:
+                        name, pool_id = name_with_pool.rsplit('_pool', 1)
+                    else:
+                        name = name_with_pool
+                        pool_id = None
+
+                    face_details.append({'name': name, 'confidence_level': confidence, 'pool_id': pool_id})
                 else:
-                    face_details.append({'name': 'unknown', 'confidence_level': ''})
+                    face_details.append({'name': 'unknown', 'confidence_level': '', 'pool_id': None})
 
         return self.format_result(face_locations, face_details)

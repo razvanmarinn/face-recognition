@@ -25,3 +25,8 @@ async def get_user_detail(user_id: int, db: Session = Depends(
 async def get_user_id(username: str, db: Session = Depends(
     get_db)):
     return db.query(User).filter(User.username == username).first().id
+
+@user_details_routers.get("/get_number_of_total_users")
+async def get_number_of_total_users(db: Session = Depends(get_db)):
+    total_users = db.query(User).count()
+    return {"total_users": total_users}

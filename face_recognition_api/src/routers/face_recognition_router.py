@@ -6,10 +6,11 @@ from src.jwt_handler import decode_jwt_token
 from src.flows.add_face import add_face
 from src.database.upload_to_db import upload_path_to_db, register_in_history
 from src.database.models.schema import Image, ImageCreate, User, RecognitionHistory
+from src.database.models.models import SharedImagePool
 from src.routers.share_pool import get_all_sip_for_user
 from time import time
 from src.kafka.KafkaHandler import KafkaHandler
-from typing import List, Optional
+from typing import List, Optional, Union
 from src.cloud_bucket.bucket_actions import BucketActions
 
 recognition_router = APIRouter(prefix='/face_recognition', tags=['face_recognition'])
@@ -63,17 +64,16 @@ async def recognize(
             face_recognition.encode_faces(user, face_name)
 
         result = face_recognition.recognize(image_content)
-        # status = result[0]['details']['name'] == face_name or result[0]['details']['name'] == 'unknown'
-        #
-        # register_in_history(
-        #     db, item=RecognitionHistory(
-        #         path=image.path,
-        #         user_id=user.id,
-        #         face_name=face_name,
-        #         timestamp=timestamp,
-        #         success_status=status
-        #     )
-        # )
+
+        register_in_history(
+            db, item=RecognitionHistory(
+                path=image.path,
+                user_id=user.id,
+                face_name=face_name,
+                timestamp=timestamp,
+                success_status=True
+            )
+        )
 
         return result
 
@@ -86,7 +86,14 @@ async def identify(
         image: UploadFile = File(...),
         token_payload: dict = Depends(decode_jwt_token),
         db: Session = Depends(get_db),
+        sip: Optional[bool] = None,
 ):
+    def get_image_pool_name(pool_id: int, db: Session) -> Union[str, None]:
+        pool = db.query(SharedImagePool).filter(SharedImagePool.id == pool_id).first()
+        if pool:
+            return pool.image_pool_name
+        return None
+
     try:
         user_id = token_payload['user_id']
         username = token_payload['username']
@@ -94,9 +101,23 @@ async def identify(
         file_size = len(image_content)
         user = User(id=user_id, username=username)
         image = Image(name="temp", size=file_size, user_id=user.id)
-        face_recognition.encode_faces(user, identify=True)
+        if sip:
+            list_of_ids = [item['id'] for item in get_all_sip_for_user(token_payload=token_payload, db=db)]
+            if len(list_of_ids) > 0:
+                face_recognition.encode_faces(user=user, pool_mode=True, pool_list=list_of_ids, identify=True)
+        else:
+            face_recognition.encode_faces(user, identify=True)
 
         result = face_recognition.recognize(image_content)
+
+        # Find pool name if pool_id is present in the result
+        for r in result:
+            details = r.get('details', {})
+            pool_id = details.get('pool_id')
+            if pool_id:
+                pool_name = get_image_pool_name(pool_id, db)
+                if pool_name:
+                    details['pool_name'] = pool_name
 
         return result
 

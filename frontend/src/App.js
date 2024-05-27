@@ -24,7 +24,7 @@ function App() {
           <Route path="/shared_image_pool" element={isLoggedIn ? <SharedImagePool /> : <Navigate to="/login" />} />
           <Route path="/profile" element={isLoggedIn ? <Profile /> : <Navigate to="/login" />} />
           <Route path="/browse_faces" element={isLoggedIn ? <BrowseFaces /> : <Navigate to="/login" />} />
-          <Route path="/dashboards" element={<Dashboards />} />
+          <Route path="/dashboards" element={isLoggedIn ? <Dashboards /> : <Navigate to="/login" />} />
 
         </Routes>
       </div>

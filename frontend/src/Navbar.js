@@ -14,6 +14,7 @@ const Navbar = () => {
                     <li><Link to="/addface">Add Face</Link></li>
                     <li><Link to="/shared_image_pool">Shared Image Pool</Link></li>
                     <li><Link to="/browse_faces">Browse Faces</Link></li>
+                    <li><Link to="/dashboards">Dashboards</Link></li>   
                 </ul>
                 <div class="right-container">
                 <form action="submit" className="Search-form">
